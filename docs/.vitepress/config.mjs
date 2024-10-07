@@ -17,7 +17,8 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '系统介绍', link: '/系统介绍.md' },
-          { text: '部署系统', link: '/搭建教程.md' }
+          { text: '部署系统', link: '/搭建教程.md' },
+          { text: '版本更新', link: '/版本更新.md' }
         ],
       },
       {
