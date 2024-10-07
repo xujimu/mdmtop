@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDM管理系统</title>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .login-form {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="password"], input[type="tel"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .loading-message {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .special-account-group {
+            display: flex;
+            align-items: center;
+        }
+        .special-account-group label {
+            margin: 0;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="login-form">
+    <div class="title">MDM管理系统</div>
+    <div class="form-group">
+        <label for="account">账号</label>
+        <input type="text" id="account" placeholder="输入账号">
+    </div>
+    <div class="form-group">
+        <label for="password">密码</label>
+        <input type="password" id="password" placeholder="输入密码">
+    </div>
+    <div class="form-group">
+        <label for="userName">用户名(选填)</label>
+        <input type="text" id="userName" placeholder="输入用户名">
+    </div>
+    <div class="form-group">
+        <label for="userPhone">手机号(选填)</label>
+        <input type="tel" id="userPhone" placeholder="输入手机号">
+    </div>
+    <div class="form-group special-account-group">
+        <input type="checkbox" id="specialAccount" checked>
+        <label for="specialAccount">专用账号</label>
+    </div>
+    <div class="error-message" id="error-message"></div>
+    <div class="loading-message" style="margin-bottom: 10px;color: red;" id="loading-message"></div>
+    <button type="button" id="loginButton">确定</button>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $('#error-message').text("");
+        $('#loading-message').text("");
+
+        var performAjaxRequest = function() {
+            $('#error-message').text("");
+
+            // 显示加载消息
+            var loadingMessage = $('#loading-message');
+            var loadingText = '请求中';
+            var dots = 0;
+
+            var loadingInterval = setInterval(function() {
+                loadingMessage.text(loadingText + '.'.repeat(dots));
+                dots = (dots + 1) % 4;
+            }, 500);
+
+            // 解析当前URL中的查询参数
+            var urlParams = new URLSearchParams(window.location.search);
+            var serialNumber = urlParams.get('serialNumber');
+            var apId = urlParams.get('apId');
+            var quickReg = urlParams.get('quickReg');
+
+
+            // 使用获取的参数进行AJAX请求
+            $.ajax({
+                url: 'https://url',
+                type: 'POST',
+                data: {
+                    account: $('#account').val(),
+                    password: $('#password').val(),
+                    userName: $('#userName').val(),
+                    userPhone: $('#userPhone').val(),
+                    serialNumber: serialNumber,
+                    apId: apId,
+                    accountType: $('#specialAccount').is(':checked') ? 2 : 1,
+                    quickReg: quickReg
+                },
+                beforeSend: function() {
+                    // 在发送请求前禁用按钮
+                    $('#loginButton').prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.code !== 200) {
+                        $('#error-message').text(response.msg); // 显示错误消息
+                    } else {
+                        window.location.href = response.data; // 页面跳转
+                    }
+                },
+                error: function() {
+                    $('#error-message').text('请求失败，请稍后再试。'); // 显示错误消息
+                },
+                complete: function() {
+                    // 在请求完成后启用按钮
+                    $('#loginButton').prop('disabled', false);
+                    clearInterval(loadingInterval);
+                    $('#loading-message').text(""); // 清除加载消息
+                }
+            });
+        };
+
+        $('#loginButton').click(performAjaxRequest);
+
+        var urlParams = new URLSearchParams(window.location.search);
+        var quickReg = urlParams.get('quickReg');
+        var isPublic = urlParams.get('isPublic');
+        //不是公有才直接注册
+        if(isPublic === '0'){
+            if (quickReg === '1') {
+                performAjaxRequest();
+            }
+        }
+    });
+</script>
+</body>
+</html>

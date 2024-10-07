@@ -1,0 +1,57 @@
+server {
+    listen         80;
+    server_name    mdm.ppgjx.com; # 域名
+    client_max_body_size 1024M;
+    add_header Strict-Transport-Security max-age=15768000;
+    return 301 https://$server_name$request_uri;
+}
+server {
+    listen 443 ssl; # 老版本是ssl on;较新的为listen 443 ssl;
+    server_name mdm.ppgjx.com; # 域名
+    keepalive_timeout 10m;
+    client_max_body_size 1024M;
+    ssl_certificate      /etc/nginx/cert/mdm.ppgjx.com.pem; # 申请的证书，把证书和秘钥上传到nginx.conf的同级目录cert的目录下
+    ssl_certificate_key  /etc/nginx/cert/mdm.ppgjx.com.key; # 秘钥
+    ssl_session_timeout 24h;
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    location /_AMapService/ {
+            set $args "$args&jscode=db3c4ab14c402d6c9ce1e7d66d3c09f6"; #高德地图的jscode
+            proxy_pass https://restapi.amap.com/;
+    }
+
+    location = /dns/query {
+    		# 代理到上游 DoH 服务器
+    		proxy_pass https://dns.alidns.com/dns-query;
+
+    		# 设置请求头
+    		proxy_set_header Host dns.alidns.com;
+    		proxy_set_header Accept-Encoding "";
+    		proxy_set_header Connection "keep-alive";
+
+    		# 确保请求和响应不被缓存
+    		proxy_buffering off;
+    		proxy_request_buffering off;
+
+    		# 传递客户端的请求头
+    		proxy_pass_request_headers on;
+
+    		# 设置正确的协议版本
+    		proxy_http_version 1.1;
+
+    		# SSL 配置，启用 SNI 支持
+    		proxy_ssl_server_name on;
+    }
+    location / {
+            proxy_pass http://127.0.0.1:34567; # 反向代理到本机的10801端口，10801端口的那个服务器不需要任何关>于https的配置。
+            proxy_redirect off;
+            root /opt/mdm/data/web; # 替换为你实际的web根目录路径
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Port $server_port;
+            add_header Content-Security-Policy upgrade-insecure-requests;
+      }
+}

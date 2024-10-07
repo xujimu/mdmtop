@@ -1,0 +1,12 @@
+[ req ]
+distinguished_name = req_distinguished_name
+prompt = no
+
+[ req_distinguished_name ]
+C = CN
+ST = Beijing
+L = Beijing
+O = Your Organization
+OU = Your Unit
+CN = test.com
+emailAddress = 1241231@email.com
