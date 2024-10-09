@@ -20,10 +20,13 @@
 
 [系统介绍](docs/系统介绍.md)
 
-[系统介绍](docs/常见问题.md)
+[常见问题](docs/常见问题.md)
 
 [版本更新](docs/版本更新.md)
 
 更直观的文档请访问
 [https://doc.mdm.top](文档)
+
+由于github无法使用大文件 可使用该链接下载
+[https://oss.ppgjx.com:9100/xjm/1.0.8.zip](部署包下载)
 
